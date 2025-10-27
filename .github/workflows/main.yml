@@ -1,0 +1,33 @@
+name: n8n Cron Workflow
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # كل 5 دقايق
+  workflow_dispatch: # لتشغيل يدوي
+
+jobs:
+  run-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install n8n
+        run: npm install n8n -g
+
+      - name: Run n8n Workflow
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
+        run: |
+          n8n execute \
+          --tunnel \
+          --input '{"items":[{"json":{}}]}' \
+          --execute-workflow workflow.json
