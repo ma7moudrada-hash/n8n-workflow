@@ -1,0 +1,227 @@
+{
+  "name": "News",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cab0069f-5cdb-4268-94f4-8469fa277d96",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://www.google.com/search?q=allintitle:\"خالد أبو بكر\"",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        -144
+      ],
+      "id": "264ad31a-ed66-4d7d-a545-38b7aac26d39",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://www.google.com/search?q=allintitle:\"خالد أبوبكر\"",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        144
+      ],
+      "id": "44768e36-059b-400f-a8be-15437a546729",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = $json.items || [];\nconst latestTitle = results[0]?.title || \"No results\";\nconst latestLink = results[0]?.link || \"\";\n\n// استخدام التخزين الخاص بالـ node نفسه\nconst nodeData = $node[\"Code in JavaScript\"].context;\nconst lastTitle = nodeData.lastTitle || null;\n\nif (lastTitle !== latestTitle) {\n  nodeData.lastTitle = latestTitle;\n  return [{\n    json: {\n      new: true,\n      title: latestTitle,\n      link: latestLink\n    }\n  }];\n} else {\n  return [{\n    json: {\n      new: false\n    }\n  }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        0
+      ],
+      "id": "7ae283be-1aad-4676-b05d-2c68fe05da9b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5dd6ce55-592e-4ddd-942f-96b21c14df28",
+              "leftValue": "={{$json[\"new\"]}} equals true",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "0085bace-0e3a-48d5-8536-a8347552a216",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "6324141996",
+        "text": "=📰 خبر جديد عن خالد أبو بكر: {{$json[\"title\"]}} 🔗 {{$json[\"link\"]}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -16
+      ],
+      "id": "59d75b66-9bc0-47cd-b32a-1fc55923c092",
+      "name": "Send a text message",
+      "webhookId": "7ad592e6-b4be-4fd4-8512-983f4c7403da",
+      "credentials": {
+        "telegramApi": {
+          "id": "RrW9jhLjb9MPNrw5",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "96280b0f-9bbb-4902-be98-f90e1ed6b108",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98d38ae66c9e0d3112ba4de41511923741e1d304aaf799911fc430f2f53f1629"
+  },
+  "id": "IWCNq5LjyXux6xVw",
+  "tags": []
+}
